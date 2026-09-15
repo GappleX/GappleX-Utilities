@@ -1,0 +1,332 @@
+package io.github.gapplex.gxu.container;
+
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
+
+import java.util.*;
+import java.util.function.Consumer;
+import java.util.function.IntFunction;
+import java.util.function.Predicate;
+
+public class Deques {
+    @SuppressWarnings("rawtypes")
+    private static final ReflectUtils<Deque> reflectUtils = new ReflectUtils<>(new CtorClassValue<>(Deque.class));
+    
+    private static final Deque<?> EMPTY = new UnmodifiableDeque<>(new ArrayDeque<>(8));
+
+    private Deques(){}
+
+    @SafeVarargs
+    @SuppressWarnings("unchecked")
+    public static <E> Deque<E> of(E @NotNull ... args){
+        if (args.length == 0){
+            return (Deque<E>) EMPTY;
+        }
+        Deque<E> deque = new ArrayDeque<>(args.length);
+        Collections.addAll(deque, args);
+        return unmodifiableDeque(deque);
+    }
+
+    @Contract(value = "_, _ -> new", pure = true)
+    @SuppressWarnings("rawtypes")
+    public static @NotNull DequeBuilder dequeOf(IntFunction<Deque> create, boolean immutable){
+        return new DequeBuilder(create, immutable);
+    }
+
+    @Contract(value = "_ -> new", pure = true)
+    @SuppressWarnings("rawtypes")
+    public static @NotNull DequeBuilder dequeOf(IntFunction<Deque> create){
+        return dequeOf(create, false);
+    }
+
+    @Contract("_, _ -> new")
+    @SuppressWarnings("rawtypes")
+    public static @NotNull DequeBuilder dequeOf(Class<? extends Deque> create, boolean immutable){
+        return new DequeBuilder(reflectUtils.createReflectFunc(create), immutable);
+    }
+
+    @Contract("_ -> new")
+    @SuppressWarnings("rawtypes")
+    public static @NotNull DequeBuilder dequeOf(Class<? extends Deque> create){
+        return dequeOf(create, false);
+    }
+
+    public static final class DequeBuilder {
+        @SuppressWarnings("rawtypes")
+        private final IntFunction<Deque> create;
+        private final boolean immutable;
+
+        @SuppressWarnings("rawtypes")
+        public DequeBuilder(IntFunction<Deque> create, boolean immutable) {
+            this.create = Objects.requireNonNull(create, "create");
+            this.immutable = immutable;
+        }
+
+        @SafeVarargs
+        public final <T> Deque<T> of(T @NotNull ... args) {
+            Deque<T> deque = newDequeInstance(args.length);
+            Collections.addAll(deque, args);
+            return finish(deque);
+        }
+
+        @SuppressWarnings("unchecked")
+        private <T> @NotNull Deque<T> newDequeInstance(int expectedSize) {
+            Deque<T> deque = (Deque<T>) create.apply(expectedSize);
+            if (deque == null) {
+                throw new CreateInstanceFailedException(
+                        "create returned null for expectedSize=" + expectedSize);
+            }
+            return deque;
+        }
+
+        private <T> Deque<T> finish(Deque<T> deque){
+            return immutable ? unmodifiableDeque(deque) : deque;
+        }
+    }
+
+    @Contract(value = "_ -> new", pure = true)
+    public static <E> @NotNull Deque<E> unmodifiableDeque(Deque<E> deque){
+        return new UnmodifiableDeque<>(deque);
+    }
+
+    public static final class UnmodifiableDeque<E> implements Deque<E> {
+        private final Deque<E> d;
+
+        public UnmodifiableDeque(Deque<E> deque){
+            d = Objects.requireNonNull(deque, "deque");
+        }
+
+        @Override
+        public void addFirst(E e) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void addLast(E e) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public boolean offerFirst(E e) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public boolean offerLast(E e) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public E removeFirst() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public E removeLast() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public E pollFirst() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public E pollLast() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public E getFirst() {
+            return d.getFirst();
+        }
+
+        @Override
+        public E getLast() {
+            return d.getLast();
+        }
+
+        @Override
+        public E peekFirst() {
+            return d.peekFirst();
+        }
+
+        @Override
+        public E peekLast() {
+            return d.peekLast();
+        }
+
+        @Override
+        public boolean removeFirstOccurrence(Object o) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public boolean removeLastOccurrence(Object o) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public boolean add(E e) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public boolean offer(E e) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public E remove() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public E poll() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public E element() {
+            return d.element();
+        }
+
+        @Override
+        public E peek() {
+            return d.peek();
+        }
+
+        @Override
+        public boolean addAll(Collection<? extends E> c) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public boolean removeAll(Collection<?> c) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public boolean retainAll(Collection<?> c) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void clear() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void push(E e) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public E pop() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public boolean remove(Object o) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public boolean containsAll(Collection<?> c) {
+            return d.containsAll(c);
+        }
+
+        @Override
+        public boolean contains(Object o) {
+            return d.contains(o);
+        }
+
+        @Override
+        public int size() {
+            return d.size();
+        }
+
+        @Override
+        public boolean isEmpty() {
+            return d.isEmpty();
+        }
+
+        @Contract(" -> new")
+        @Override
+        public @NotNull Iterator<E> iterator() {
+            return unmodifiableIterator(d.iterator());
+        }
+
+        @Contract(pure = true)
+        @Override
+        public Object @NotNull [] toArray() {
+            return d.toArray();
+        }
+
+        @Override
+        public <T> T @NotNull [] toArray(T[] a) {
+            return d.toArray(a);
+        }
+
+        @Contract(" -> new")
+        @Override
+        public @NotNull Iterator<E> descendingIterator() {
+            return unmodifiableIterator(d.descendingIterator());
+        }
+
+        @Override
+        public boolean removeIf(Predicate<? super E> filter) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            return d.equals(o);
+        }
+
+        @Override
+        public int hashCode() {
+            return d.hashCode();
+        }
+
+        @Contract(" -> new")
+        @Override
+        public @NotNull Spliterator<E> spliterator() {
+            return Spliterators.spliterator(
+                    unmodifiableIterator(d.iterator()),
+                    d.size(),
+                    d.spliterator().characteristics()
+            );
+        }
+
+        @Override
+        public String toString(){
+            return d.toString();
+        }
+    }
+
+    @Contract(value = "_ -> new", pure = true)
+    private static <E> @NotNull Iterator<E> unmodifiableIterator(Iterator<E> it) {
+        return new Iterator<E>() {
+            @Override
+            public boolean hasNext() {
+                return it.hasNext();
+            }
+
+            @Override
+            public E next() {
+                return it.next();
+            }
+
+            @Override
+            public void remove() {
+                throw new UnsupportedOperationException();
+            }
+
+            @Override
+            public void forEachRemaining(Consumer<? super E> action) {
+                it.forEachRemaining(action);
+            }
+        };
+    }
+}
