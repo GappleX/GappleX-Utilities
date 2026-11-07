@@ -17,7 +17,7 @@ GappleX-Utilities 是一个轻量级、零外部依赖（Zero Dependencies）的
 <dependency>
     <groupId>io.github.gapplex</groupId>
     <artifactId>gxu</artifactId>
-    <version>0.8.0</version>
+    <version>0.8.1</version>
 </dependency>
 ```
 
@@ -53,6 +53,15 @@ Lists.ListBuilder lb2 = Lists.listOf(ArrayList.class);
 
 ---
 
+## 集合与数组辅助 (CollectionAndArrayUtils)
+
+提供了极其严格的 **Fail-Fast** 校验机制，保证集合操作的**原子性**（绝不产生半添加的脏数据）。
+
+- **`addAllAndNotNull`**：先遍历校验数组中是否包含 `null`，只有全部合法才会批量加入集合。如果遇到 `null` 直接抛出异常，目标集合保持原样。
+- **原生数组遍历**：提供针对 `int[]`、`long[]`、`double[]` 等基本类型数组的 `foreach` 方法，接受带索引的函数式接口（如 `IntIntCsm`），避免自动装箱性能损耗。
+
+---
+
 ## JSON 解析 (json)
 
 **从 0.8.0 开始，废弃了所有 `org.json` 风格的 `JsonObject` / `JsonArray` / `JsonUtils` 树形模型。**
@@ -75,7 +84,7 @@ List<Object> rawList = new JsonParser(json).parseArray();
 
 `unsafe` 包**自身不获取、也不持有** `sun.misc.Unsafe`（防止被当成提权攻击的“白手套”），而是依赖外部传入 `IUnsafe` 接口实现，做到彻底的能力隔离。
 
-### 1. 极速序列化/反序列化 (`Unsafeties`)
+### 1. 极速序列化与反序列化 (`Unsafeties`)
 利用 `Unsafe` 直接读写内存偏移量，配合 `ClassValue` 字段缓存，吞吐量远超传统反射。
 
 ```java
@@ -103,6 +112,10 @@ Map<String, Object> taggedMap = BeanMapWrapper.wrap(User.class, rawMap);
 User user = Unsafeties.getInstance(unsafe).deserialize(User.class, taggedMap);
 ```
 
+### 3. 字段与数组内存级直读直写
+提供 `get` / `put` 及 `getStatic` / `putStatic` 方法，直接通过 Unsafe 偏移量读写对象的实例字段和静态字段。
+同时支持直接对 `int[]`、`long[]`、`Object[]` 等原生数组进行 `getArrayElement` / `putArrayElement` 操作，完全绕过边界反射，达到极致性能。
+
 ---
 
 ## 反射与调用者安全 (reflect)
@@ -110,16 +123,17 @@ User user = Unsafeties.getInstance(unsafe).deserialize(User.class, taggedMap);
 `Fields` 提供了纯反射读写。`Callers` 则提供了**防伪造、防反射篡改的栈帧扫描能力**。
 
 ### Callers 调用链安全防御
-传统的 `StackWalker` 经常被攻击者在自己的恶意方法上加个注解就伪造了调用链。GXU 的 `Callers` 引入了双重校验：
+传统的 `StackWalker` 经常被攻击者在自己的恶意方法上加个注解就伪造了调用链。GXU 的 `Callers` 引入了多重校验：
 
 1. **白名单机制 (`trusted`)**：只有被显式加入白名单的类，其带有 `@SkipCallerScan` 注解的方法才会被真正跳过。
 2. **纯不可变性**：内部 `trusted` 集合使用 `Set.copyOf` 深度冻结，攻击者就算反射拿到了也无法往里塞类。
 3. **模块系统隔离**：库自带 `module-info.class` 且**无 `opens` 声明**。外部若尝试 `setAccessible(true)` 篡改，JVM 将直接抛出异常拦截。
+4. **Fail-Closed 异常兜底**：当反射检查出现异常时，宁可直接暴露内部帧，也绝不放过任何可能的隐藏恶意调用。
 
 ```java
-// 只有框架类 (MyFrameWorkClass) 内部的 @SkipCallerScan 才会生效
-Callers callers = new Callers(MyFrameWorkClass.class);
-boolean isSafe = callers.isCalledFrom(MyFrameWorkClass.class);
+// 只有框架类 (MyFrameworkClass) 内部的 @SkipCallerScan 才会生效
+Callers callers = new Callers(MyFrameworkClass.class);
+boolean isSafe = callers.isCalledFrom(MyFrameworkClass.class);
 ```
 
 ---
@@ -128,7 +142,7 @@ boolean isSafe = callers.isCalledFrom(MyFrameWorkClass.class);
 
 - **`MapModifier`**：优雅的链式 Map 组装器，支持 `putIfNotNull`，一键生成可变或不可变副本。
 - **`CapacityUtils`**：开放 `capacity` 与 `inverseCapacity`，帮助用户自定义集合时也能做到完美的容量预分配。
-- **`Maths`**: 开放 `toShortExact`,`toByteExact`和`toLongExact`帮助您更"Exact"地转换数字。
+- **`Maths`**：提供 `toShortExact`、`toByteExact` 和 `toLongExact`。在各种数值格式转换（如 JSON 数字溢出、BigDecimal 截断）中，严格检测边界，防止“静默溢出”。
 
 ---
 
