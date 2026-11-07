@@ -4,9 +4,9 @@ GappleX-Utilities 是一个轻量级、零外部依赖（Zero Dependencies）的
 
 ## 环境要求
 
-- **Java 8 及以上**（完美支持 Java 9+ 模块系统 JPMS）
+- **Java 11 及以上**
 - 构建：Maven 3.6+
-- 开发环境使用 JDK 17 + GraalVM 验证，编译目标为 Java 8
+- 开发环境使用 JDK 17 + GraalVM 验证，编译目标为 Java 11
 - 整体包体积极小（约 120KB），无任何第三方运行时强依赖
 
 ## 快速开始
