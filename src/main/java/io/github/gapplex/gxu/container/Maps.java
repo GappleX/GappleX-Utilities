@@ -39,25 +39,25 @@ public class Maps {
     @Contract("_, _ -> new")
     @SuppressWarnings("rawtypes")
     public static @NotNull MapBuilder mapOf(Class<? extends Map> clazz, boolean immutable){
-        return new MapBuilder(reflectUtils.createReflectFunc(clazz), immutable);
+        return new MapBuilder(reflectUtils.createReflectFunc(Objects.requireNonNull(clazz, "clazz")), immutable);
     }
 
     @Contract("_ -> new")
     @SuppressWarnings("rawtypes")
     public static @NotNull MapBuilder mapOf(Class<? extends Map> clazz){
-        return mapOf(clazz, false);
+        return mapOf(Objects.requireNonNull(clazz, "clazz"), false);
     }
 
     @SuppressWarnings("rawtypes")
     @Contract(value = "_, _ -> new", pure = true)
     public static @NotNull MapBuilder mapOf(IntFunction<Map> func, boolean immutable){
-        return new MapBuilder(func, immutable);
+        return new MapBuilder(Objects.requireNonNull(func, "func"), immutable);
     }
 
     @SuppressWarnings("rawtypes")
     @Contract(value = "_ -> new", pure = true)
     public static @NotNull MapBuilder mapOf(IntFunction<Map> func){
-        return mapOf(func, false);
+        return mapOf(Objects.requireNonNull(func, "func"), false);
     }
 
     @Contract(pure = true)
@@ -177,6 +177,7 @@ public class Maps {
 
     @SafeVarargs
     public static <K, V> @UnmodifiableView @NotNull Map<K, V> ofEntries(Map.Entry<? extends K, ? extends V> @NotNull ... entries) {
+        Objects.requireNonNull(entries, "entries");
         Map<K, V> map = newLinkedHashMap(entries.length);
         for (Map.Entry<? extends K, ? extends V> e : entries) {
             safePut(map, e.getKey(), e.getValue());
@@ -186,7 +187,7 @@ public class Maps {
 
     @Contract(value = "_, _ -> new", pure = true)
     public static <K, V> Map.@NotNull Entry<K, V> entry(@NotNull K k, @NotNull V v) {
-        return new AbstractMap.SimpleImmutableEntry<>(k, v);
+        return new AbstractMap.SimpleImmutableEntry<>(Objects.requireNonNull(k, "k"), Objects.requireNonNull(v, "v"));
     }
 
     @Contract("_ -> new")
@@ -209,7 +210,7 @@ public class Maps {
         private final boolean immutable;
 
         @SuppressWarnings("rawtypes")
-        public MapBuilder(IntFunction<Map> create, boolean immutable) {
+        private MapBuilder(IntFunction<Map> create, boolean immutable) {
             this.create = Objects.requireNonNull(create, "create");
             this.immutable = immutable;
         }
@@ -355,9 +356,9 @@ public class Maps {
     private static <K, V> void safePut(@NotNull Map<K, V> map, @NotNull K key, @NotNull V value){
         Objects.requireNonNull(key, "key");
         Objects.requireNonNull(value, "value");
-        if (map.containsKey(key)){
+        V existing = map.putIfAbsent(key, value);
+        if (existing != null) {
             throw new IllegalArgumentException("Duplicate key '" + key + "'");
         }
-        map.put(key, value);
     }
 }

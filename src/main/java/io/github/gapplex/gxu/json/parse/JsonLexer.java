@@ -29,8 +29,7 @@ public final class JsonLexer {
     private int pos;
 
     public JsonLexer(String json){
-        Objects.requireNonNull(json);
-        this.json = json;
+        this.json = Objects.requireNonNull(json, "json");
         pos = 0;
         currentToken = nextToken();
     }

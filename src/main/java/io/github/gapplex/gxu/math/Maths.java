@@ -15,6 +15,8 @@
  */
 package io.github.gapplex.gxu.math;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.RoundingMode;
@@ -39,7 +41,7 @@ public final class Maths {
         return (byte) value;
     }
 
-    public static long toLongExact(Number n) {
+    public static long toLongExact(@NotNull Number n) {
         Objects.requireNonNull(n, "n must not be null");
         if (n instanceof Long || n instanceof Integer
                 || n instanceof Short || n instanceof Byte) {

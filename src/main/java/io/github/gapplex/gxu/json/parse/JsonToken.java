@@ -15,13 +15,15 @@
  */
 package io.github.gapplex.gxu.json.parse;
 
+import java.util.Objects;
+
 public class JsonToken {
     private final JsonTokenType type;
     private final Object value;
     private final int position;
 
     JsonToken(JsonTokenType type, Object value, int position) {
-        this.type = type;
+        this.type = Objects.requireNonNull(type, "type");
         this.value = value;
         this.position = position;
     }

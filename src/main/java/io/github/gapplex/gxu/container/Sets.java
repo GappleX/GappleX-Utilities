@@ -29,13 +29,12 @@ public class Sets {
 
     @SafeVarargs
     public static <T> Set<T> of(T @NotNull ... args){
+        Objects.requireNonNull(args, "args");
         if (args.length == 0){
             return Collections.emptySet();
         }
 
-        Set<T> set = newLinkedHashSet(args.length);
-        Collections.addAll(set, args);
-        return Collections.unmodifiableSet(set);
+        return Collections.unmodifiableSet(CollectionAndArrayUtils.addAllAndNotNull(newLinkedHashSet(args.length), args));
     }
 
     @Contract("_ -> new")
@@ -51,25 +50,25 @@ public class Sets {
     @Contract(value = "_, _ -> new", pure = true)
     @SuppressWarnings("rawtypes")
     public static @NotNull SetBuilder setOf(IntFunction<Set> create, boolean immutable){
-        return new SetBuilder(create, immutable);
+        return new SetBuilder(Objects.requireNonNull(create, "create"), immutable);
     }
 
     @Contract(value = "_ -> new", pure = true)
     @SuppressWarnings("rawtypes")
     public static @NotNull SetBuilder setOf(IntFunction<Set> create){
-        return setOf(create, false);
+        return setOf(Objects.requireNonNull(create, "create"), false);
     }
 
     @Contract("_, _ -> new")
     @SuppressWarnings("rawtypes")
     public static @NotNull SetBuilder setOf(Class<? extends Set> create, boolean immutable){
-        return new SetBuilder(reflectUtils.createReflectFunc(create), immutable);
+        return new SetBuilder(reflectUtils.createReflectFunc(Objects.requireNonNull(create, "create")), immutable);
     }
 
     @Contract("_ -> new")
     @SuppressWarnings("rawtypes")
     public static @NotNull SetBuilder setOf(Class<? extends Set> create){
-        return setOf(create, false);
+        return setOf(Objects.requireNonNull(create, "create"), false);
     }
 
     public static final class SetBuilder {
@@ -78,16 +77,14 @@ public class Sets {
         private final boolean immutable;
 
         @SuppressWarnings("rawtypes")
-        public SetBuilder(IntFunction<Set> create, boolean immutable) {
+        private SetBuilder(IntFunction<Set> create, boolean immutable) {
             this.create = Objects.requireNonNull(create, "create");
             this.immutable = immutable;
         }
 
         @SafeVarargs
         public final <T> Set<T> of(T @NotNull ... args) {
-            Set<T> set = newSetInstance(args.length);
-            Collections.addAll(set, args);
-            return finish(set);
+            return finish(CollectionAndArrayUtils.addAllAndNotNull(newSetInstance(Objects.requireNonNull(args, "args").length), args));
         }
 
         @SuppressWarnings("unchecked")

@@ -20,7 +20,7 @@ import org.jetbrains.annotations.NotNull;
 import java.lang.reflect.Constructor;
 import java.util.Objects;
 
-public class CtorClassValue<T> extends ClassValue<ClassRecord<T>> {
+class CtorClassValue<T> extends ClassValue<ClassRecord<T>> {
     private final Class<T> targetType;
 
     public CtorClassValue(Class<T> targetType) {

@@ -34,36 +34,35 @@ public class Deques {
     @SafeVarargs
     @SuppressWarnings("unchecked")
     public static <E> Deque<E> of(E @NotNull ... args){
+        Objects.requireNonNull(args, "args");
         if (args.length == 0){
             return (Deque<E>) EMPTY;
         }
-        Deque<E> deque = new ArrayDeque<>(args.length);
-        Collections.addAll(deque, args);
-        return unmodifiableDeque(deque);
+        return unmodifiableDeque(CollectionAndArrayUtils.addAllAndNotNull(new ArrayDeque<>(args.length), args));
     }
 
     @Contract(value = "_, _ -> new", pure = true)
     @SuppressWarnings("rawtypes")
     public static @NotNull DequeBuilder dequeOf(IntFunction<Deque> create, boolean immutable){
-        return new DequeBuilder(create, immutable);
+        return new DequeBuilder(Objects.requireNonNull(create, "create"), immutable);
     }
 
     @Contract(value = "_ -> new", pure = true)
     @SuppressWarnings("rawtypes")
     public static @NotNull DequeBuilder dequeOf(IntFunction<Deque> create){
-        return dequeOf(create, false);
+        return dequeOf(Objects.requireNonNull(create, "create"), false);
     }
 
     @Contract("_, _ -> new")
     @SuppressWarnings("rawtypes")
     public static @NotNull DequeBuilder dequeOf(Class<? extends Deque> create, boolean immutable){
-        return new DequeBuilder(reflectUtils.createReflectFunc(create), immutable);
+        return new DequeBuilder(reflectUtils.createReflectFunc(Objects.requireNonNull(create, "create")), immutable);
     }
 
     @Contract("_ -> new")
     @SuppressWarnings("rawtypes")
     public static @NotNull DequeBuilder dequeOf(Class<? extends Deque> create){
-        return dequeOf(create, false);
+        return dequeOf(Objects.requireNonNull(create, "create"), false);
     }
 
     public static final class DequeBuilder {
@@ -72,16 +71,15 @@ public class Deques {
         private final boolean immutable;
 
         @SuppressWarnings("rawtypes")
-        public DequeBuilder(IntFunction<Deque> create, boolean immutable) {
+        private DequeBuilder(IntFunction<Deque> create, boolean immutable) {
             this.create = Objects.requireNonNull(create, "create");
             this.immutable = immutable;
         }
 
         @SafeVarargs
         public final <T> Deque<T> of(T @NotNull ... args) {
-            Deque<T> deque = newDequeInstance(args.length);
-            Collections.addAll(deque, args);
-            return finish(deque);
+            Objects.requireNonNull(args, "args");
+            return finish(CollectionAndArrayUtils.addAllAndNotNull(newDequeInstance(args.length), args));
         }
 
         @SuppressWarnings("unchecked")
@@ -101,54 +99,55 @@ public class Deques {
 
     @Contract(value = "_ -> new", pure = true)
     public static <E> @NotNull Deque<E> unmodifiableDeque(Deque<E> deque){
-        return new UnmodifiableDeque<>(deque);
+        return new UnmodifiableDeque<>(Objects.requireNonNull(deque, "deque"));
     }
 
-    public static final class UnmodifiableDeque<E> implements Deque<E> {
+    private static final class UnmodifiableDeque<E> implements Deque<E> {
+        private static final UnsupportedOperationException UOE = new UnsupportedOperationException("Unmodifiable Deque");
         private final Deque<E> d;
 
-        public UnmodifiableDeque(Deque<E> deque){
+        private UnmodifiableDeque(Deque<E> deque){
             d = Objects.requireNonNull(deque, "deque");
         }
 
         @Override
         public void addFirst(E e) {
-            throw new UnsupportedOperationException();
+            throw UOE;
         }
 
         @Override
         public void addLast(E e) {
-            throw new UnsupportedOperationException();
+            throw UOE;
         }
 
         @Override
         public boolean offerFirst(E e) {
-            throw new UnsupportedOperationException();
+            throw UOE;
         }
 
         @Override
         public boolean offerLast(E e) {
-            throw new UnsupportedOperationException();
+            throw UOE;
         }
 
         @Override
         public E removeFirst() {
-            throw new UnsupportedOperationException();
+            throw UOE;
         }
 
         @Override
         public E removeLast() {
-            throw new UnsupportedOperationException();
+            throw UOE;
         }
 
         @Override
         public E pollFirst() {
-            throw new UnsupportedOperationException();
+            throw UOE;
         }
 
         @Override
         public E pollLast() {
-            throw new UnsupportedOperationException();
+            throw UOE;
         }
 
         @Override
@@ -173,32 +172,32 @@ public class Deques {
 
         @Override
         public boolean removeFirstOccurrence(Object o) {
-            throw new UnsupportedOperationException();
+            throw UOE;
         }
 
         @Override
         public boolean removeLastOccurrence(Object o) {
-            throw new UnsupportedOperationException();
+            throw UOE;
         }
 
         @Override
         public boolean add(E e) {
-            throw new UnsupportedOperationException();
+            throw UOE;
         }
 
         @Override
         public boolean offer(E e) {
-            throw new UnsupportedOperationException();
+            throw UOE;
         }
 
         @Override
         public E remove() {
-            throw new UnsupportedOperationException();
+            throw UOE;
         }
 
         @Override
         public E poll() {
-            throw new UnsupportedOperationException();
+            throw UOE;
         }
 
         @Override
@@ -213,37 +212,37 @@ public class Deques {
 
         @Override
         public boolean addAll(@NotNull Collection<? extends E> c) {
-            throw new UnsupportedOperationException();
+            throw UOE;
         }
 
         @Override
         public boolean removeAll(@NotNull Collection<?> c) {
-            throw new UnsupportedOperationException();
+            throw UOE;
         }
 
         @Override
         public boolean retainAll(@NotNull Collection<?> c) {
-            throw new UnsupportedOperationException();
+            throw UOE;
         }
 
         @Override
         public void clear() {
-            throw new UnsupportedOperationException();
+            throw UOE;
         }
 
         @Override
         public void push(E e) {
-            throw new UnsupportedOperationException();
+            throw UOE;
         }
 
         @Override
         public E pop() {
-            throw new UnsupportedOperationException();
+            throw UOE;
         }
 
         @Override
         public boolean remove(Object o) {
-            throw new UnsupportedOperationException();
+            throw UOE;
         }
 
         @Override
@@ -291,7 +290,7 @@ public class Deques {
 
         @Override
         public boolean removeIf(@NotNull Predicate<? super E> filter) {
-            throw new UnsupportedOperationException();
+            throw UOE;
         }
 
         @Override
@@ -322,7 +321,7 @@ public class Deques {
 
     @Contract(value = "_ -> new", pure = true)
     private static <E> @NotNull Iterator<E> unmodifiableIterator(Iterator<E> it) {
-        return new Iterator<E>() {
+        return new Iterator<>() {
             @Override
             public boolean hasNext() {
                 return it.hasNext();
@@ -335,7 +334,7 @@ public class Deques {
 
             @Override
             public void remove() {
-                throw new UnsupportedOperationException();
+                throw UnmodifiableDeque.UOE;
             }
 
             @Override

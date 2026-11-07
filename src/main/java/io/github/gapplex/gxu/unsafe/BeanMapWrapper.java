@@ -16,6 +16,7 @@
 package io.github.gapplex.gxu.unsafe;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.UnmodifiableView;
 
 import java.lang.reflect.*;
 import java.util.*;
@@ -77,7 +78,7 @@ public final class BeanMapWrapper {
         return rawData;
     }
 
-    private static BeanMap wrapBean(Class<?> clazz, Map<?, ?> rawMap) {
+    private static @NotNull BeanMap wrapBean(Class<?> clazz, Map<?, ?> rawMap) {
         BeanMap beanMap = new BeanMap();
         Map<String, Field> fields = getFields(clazz);
 
@@ -95,7 +96,7 @@ public final class BeanMapWrapper {
         return beanMap;
     }
 
-    private static List<Object> wrapList(Type elemType, List<?> rawList) {
+    private static @NotNull List<Object> wrapList(Type elemType, @NotNull List<?> rawList) {
         List<Object> list = new ArrayList<>(rawList.size());
         Class<?> rawClass = extractRawClass(elemType);
         for (Object item : rawList) {
@@ -104,7 +105,7 @@ public final class BeanMapWrapper {
         return list;
     }
 
-    private static Map<Object, Object> wrapMap(Type valType, Map<?, ?> rawMap) {
+    private static @NotNull Map<Object, Object> wrapMap(Type valType, @NotNull Map<?, ?> rawMap) {
         Map<Object, Object> map = new LinkedHashMap<>();
         Class<?> rawClass = extractRawClass(valType);
         for (Map.Entry<?, ?> entry : rawMap.entrySet()) {
@@ -115,7 +116,7 @@ public final class BeanMapWrapper {
 
     private static final ClassValue<Map<String, Field>> FIELD_CACHE = new ClassValue<>() {
         @Override
-        protected Map<String, Field> computeValue(@NotNull Class<?> type) {
+        protected @NotNull @UnmodifiableView Map<String, Field> computeValue(@NotNull Class<?> type) {
             Map<String, Field> map = new LinkedHashMap<>();
             for (Class<?> c = type; c != null && c != Object.class; c = c.getSuperclass()) {
                 for (Field f : c.getDeclaredFields()) {
@@ -152,7 +153,7 @@ public final class BeanMapWrapper {
         return Object.class;
     }
 
-    private static boolean isSimpleType(Class<?> clazz) {
+    private static boolean isSimpleType(@NotNull Class<?> clazz) {
         return clazz.isPrimitive()
                 || clazz == String.class
                 || clazz == Boolean.class

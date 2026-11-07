@@ -19,7 +19,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.Objects;
 import java.util.function.IntFunction;
 
-public class ReflectUtils<T> {
+class ReflectUtils<T> {
     private final CtorClassValue<T> ctors;
     public ReflectUtils(CtorClassValue<T> ctors){
         this.ctors = ctors;

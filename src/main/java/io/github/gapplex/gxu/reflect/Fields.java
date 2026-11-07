@@ -16,7 +16,9 @@
 package io.github.gapplex.gxu.reflect;
 
 import io.github.gapplex.gxu.convert.PrimitiveUtils;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -80,7 +82,7 @@ public final class Fields {
         return lookup(type, name);
     }
 
-    private static Field requireField(Class<?> owner, String name, boolean staticField) {
+    private static @NotNull Field requireField(Class<?> owner, String name, boolean staticField) {
         Field field = lookup(owner, name);
         if (field == null) {
             throw ReflectException.fieldNotFound(owner.getName(), name);
@@ -95,7 +97,7 @@ public final class Fields {
         return field;
     }
 
-    private static Field lookup(Class<?> type, String name) {
+    private static @Nullable Field lookup(Class<?> type, String name) {
         for (Class<?> current = type; current != null; current = current.getSuperclass()) {
             Field found = findDeclared(current, name);
             if (found != null) {
@@ -109,7 +111,7 @@ public final class Fields {
         return null;
     }
 
-    private static Field lookupInterfaces(Class<?> type, String name, Set<Class<?>> visited) {
+    private static @Nullable Field lookupInterfaces(Class<?> type, String name, Set<Class<?>> visited) {
         Class<?>[] ifaces = type.getInterfaces();
         if (ifaces.length == 0) {
             return null;
@@ -137,7 +139,7 @@ public final class Fields {
         return FIELD_INDEX.get(type).get(name);
     }
 
-    private static void checkReadable(Class<?> owner, Field field, Class<?> type) {
+    private static void checkReadable(Class<?> owner, @NotNull Field field, Class<?> type) {
         Class<?> expected = PrimitiveUtils.wrap(type);
         Class<?> actual = PrimitiveUtils.wrap(field.getType());
         if (!expected.isAssignableFrom(actual)) {
@@ -184,7 +186,8 @@ public final class Fields {
         }
     }
 
-    private static RuntimeException wrap(Throwable t) {
+    @Contract(value = "null -> new", pure = true)
+    private static @NotNull RuntimeException wrap(Throwable t) {
         if (t instanceof Error) {
             throw (Error) t;
         }
@@ -197,7 +200,7 @@ public final class Fields {
     private static final ClassValue<Map<String, Field>> FIELD_INDEX =
             new ClassValue<>() {
                 @Override
-                protected Map<String, Field> computeValue(@NotNull Class<?> type) {
+                protected @NotNull Map<String, Field> computeValue(@NotNull Class<?> type) {
                     Field[] fields;
                     try {
                         fields = type.getDeclaredFields();
@@ -218,8 +221,9 @@ public final class Fields {
                 }
             };
 
+    @Contract(pure = true)
     @Deprecated
-    public static String getVersion() {
+    public static @NotNull String getVersion() {
         return "SAFE";
     }
 }

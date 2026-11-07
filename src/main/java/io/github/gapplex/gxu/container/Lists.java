@@ -29,37 +29,36 @@ public class Lists {
 
     @SafeVarargs
     public static <T> List<T> of(T @NotNull ... args){
+        Objects.requireNonNull(args, "args");
         if (args.length == 0){
             return Collections.emptyList();
         }
 
-        List<T> list = new ArrayList<>(args.length);
-        Collections.addAll(list, args);
-        return Collections.unmodifiableList(list);
+        return Collections.unmodifiableList(CollectionAndArrayUtils.addAllAndNotNull(new ArrayList<>(args.length), args));
     }
 
     @Contract(value = "_, _ -> new", pure = true)
     @SuppressWarnings("rawtypes")
     public static @NotNull ListBuilder listOf(IntFunction<List> create, boolean immutable){
-        return new ListBuilder(create, immutable);
+        return new ListBuilder(Objects.requireNonNull(create, "create"), immutable);
     }
 
     @Contract(value = "_ -> new", pure = true)
     @SuppressWarnings("rawtypes")
     public static @NotNull ListBuilder listOf(IntFunction<List> create){
-        return listOf(create, false);
+        return listOf(Objects.requireNonNull(create, "create"), false);
     }
 
     @Contract("_, _ -> new")
     @SuppressWarnings("rawtypes")
     public static @NotNull ListBuilder listOf(Class<? extends List> create, boolean immutable){
-        return new ListBuilder(reflectUtils.createReflectFunc(create), immutable);
+        return new ListBuilder(reflectUtils.createReflectFunc(Objects.requireNonNull(create, "create")), immutable);
     }
 
     @Contract("_ -> new")
     @SuppressWarnings("rawtypes")
     public static @NotNull ListBuilder listOf(Class<? extends List> create){
-        return listOf(create, false);
+        return listOf(Objects.requireNonNull(create, "create"), false);
     }
 
     public static final class ListBuilder {
@@ -68,16 +67,14 @@ public class Lists {
         private final boolean immutable;
 
         @SuppressWarnings("rawtypes")
-        public ListBuilder(IntFunction<List> create, boolean immutable) {
+        private ListBuilder(IntFunction<List> create, boolean immutable) {
             this.create = Objects.requireNonNull(create, "create");
             this.immutable = immutable;
         }
 
         @SafeVarargs
         public final <T> List<T> of(T @NotNull ... args) {
-            List<T> list = newListInstance(args.length);
-            list.addAll(Arrays.asList(args));
-            return finish(list);
+            return finish(CollectionAndArrayUtils.addAllAndNotNull(newListInstance(Objects.requireNonNull(args, "args").length), args));
         }
 
         @SuppressWarnings("unchecked")

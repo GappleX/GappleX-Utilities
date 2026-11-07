@@ -17,17 +17,14 @@ package io.github.gapplex.gxu.json.parse;
 
 import io.github.gapplex.gxu.json.JsonException;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Supplier;
 
 public class JsonParser {
     private final JsonLexer lexer;
 
     public JsonParser(String json) {
-        this.lexer = new JsonLexer(json);
+        this.lexer = new JsonLexer(Objects.requireNonNull(json, "json"));
     }
 
     /**
