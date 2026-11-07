@@ -128,7 +128,7 @@ boolean isSafe = callers.isCalledFrom(MyFrameWorkClass.class);
 
 - **`MapModifier`**：优雅的链式 Map 组装器，支持 `putIfNotNull`，一键生成可变或不可变副本。
 - **`CapacityUtils`**：开放 `capacity` 与 `inverseCapacity`，帮助用户自定义集合时也能做到完美的容量预分配。
-- ** `Maths` **: 开放 `toShortExact`,`toByteExact`和`toLongExact`帮助您更"Exact"地转换数字。
+- **`Maths`**: 开放 `toShortExact`,`toByteExact`和`toLongExact`帮助您更"Exact"地转换数字。
 
 ---
 
