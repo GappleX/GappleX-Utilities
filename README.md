@@ -1,206 +1,130 @@
-# GappleX-Utilities
+# GappleX-Utilities (GXU)
+
+GappleX-Utilities 是一个轻量级、零外部依赖（Zero Dependencies）的 Java 底层工具库。极致压榨性能，提供工业级的安全防护与优雅的 API 设计。
 
 ## 环境要求
 
-- Java 8 及以上
+- **Java 8 及以上**（完美支持 Java 9+ 模块系统 JPMS）
 - 构建：Maven 3.6+
 - 开发环境使用 JDK 17 + GraalVM 验证，编译目标为 Java 8
+- 整体包体积极小（约 120KB），无任何第三方运行时强依赖
 
 ## 快速开始
 
-### 1.添加依赖
+### 1. 添加依赖
 
 ```xml
 <dependency>
     <groupId>io.github.gapplex</groupId>
     <artifactId>gxu</artifactId>
-    <version>0.2.0</version>
+    <version>0.8.0</version>
 </dependency>
 ```
 
-### 2.使用
+### 2. 使用指南
 
-GaplleX-Utilities提供了类似Guava的工具类，如`Maps` `Lists` `Sets` `Deques`，以及 `MapModifier`。
+---
 
-#### Maps
+### 容器工厂 (container)
 
-1. **of**:
+提供了类似 Guava 但**更具现代化泛型推断**和**容量精算**的 `Maps`、`Lists`、`Sets`、`Deques` 及 `MapModifier`。
 
-   `Maps`中包含了类似Java9+的`Map.of`。它们的用法相同，但是`Maps.of`使用`LinkedHashMap`，相较于`Map.of`，`Maps.of`是有序的。
-2. **mapOf**：
-
-   `Maps`提供了针对特殊`Map`类型的`of`.`mapOf`有两个重载，`Class<? extends Map>` 和 `IntFunction<Map>`。前者适用于动态类型的`Map`创建，但是局限性较大，只支持反射创建的`(int) or ()`构造。后者则提供了更大的灵活性，您可以利用这一点做到`EnumMap`或`TreeMap`的入参。
-
-    `mapOf`返回一个`Maps.MapBuilder`,您可以使用其内部的`of`或`ofEntries`创建`Map`.它是可复用的。您可以在`mapOf`方法的第二个参数输入`boolean`控制是否不可变，`true`返回不可变，单参数的`mapOf`返回可变（等价于第二个参数传`false`）
-
-   >注：`IntFunction<Map>`的`Int`输入是容量而非元素数量。针对特殊`Map`,您可以使用`CapacityUtils`中的`inverseCapacity`来逆向`IntFunction`的输入为预期的元素数量
-3. **ofEntries**:
-
-    `Maps`提供了ofEntries用于创建无数对的不可变Map.它接受`Map.Entry<? extends K, ? extends V> ...`。您可以使用`Maps.entry`快速创建`Map.Entry`。
-
-   ```java
-   Map<String, Integer> map = Maps.ofEntries(
-       Maps.entry("a", 1),
-       Maps.entry("b", 2),
-       Maps.entry("c", 3)
-   );
-   ```
-
-   重复 key 或 null key/value 会抛 `IllegalArgumentException` / `NullPointerException`。
-
-4. **newHashMap / newLinkedHashMap**：
-
-   按预期元素数量创建可变 `HashMap` / `LinkedHashMap`，内部自动做 `CapacityUtils.capacity` 转换，避免扩容。
-
-   ```java
-   Map<String, Integer> m = Maps.newHashMap(16);
-   ```
-
-5. **unmodifiableMap**：
-
-   对已有 `Map` 包一层只读视图，等价于 `Collections.unmodifiableMap`，但会拒绝 null 参数。
-
-6. **modifierToAnyMap**：
-
-   配合 `MapModifier` 使用，把链式构造的结果传给任意 `Map` 工厂函数。详见 MapModifier 一节。
-
-### Lists
-
-`Lists` 对应 `Maps` 的用法，提供不可变列表创建和可选的反射/函数式 builder。
-
-1. **of**：
-
-   ```java
-   List<String> list = Lists.of("a", "b", "c");
-   ```
-
-   返回 `Collections.unmodifiableList` 包装的 `ArrayList`。空参数时返回 `Collections.emptyList()`。
-
-2. **listOf**：
-
-   与 `Maps.mapOf` 同构，接受 `Class<? extends List>` 或 `IntFunction<List>`，返回可复用的 `ListBuilder`。第二个 `boolean` 参数控制是否不可变，单参数版本默认可变。
-
-   ```java
-   List<String> list = Lists.listOf(ArrayList.class).of("a", "b");
-   List<String> immutable = Lists.listOf(LinkedList.class, true).of("x", "y");
-   ```
-
-   > 注：`IntFunction<List>` 的 `Int` 输入是容量。`ArrayList` 的 `int` 构造参数本身就是"预期元素数量"，所以直接传入即可，无需 `CapacityUtils` 转换。
-
-### Sets
-
-和 `Lists` 对称，额外提供 `newHashSet` / `newLinkedHashSet` 快捷方法。
-
-1. **of**：
-
-   ```java
-   Set<String> set = Sets.of("a", "b", "c");
-   ```
-
-   返回 `Collections.unmodifiableSet` 包装的 `LinkedHashSet`，保持插入顺序。空参数时返回 `Collections.emptySet()`。
-
-2. **setOf**：
-
-   与 `Maps.mapOf` / `Lists.listOf` 同构，接受 `Class<? extends Set>` 或 `IntFunction<Set>`，返回可复用的 `SetBuilder`。
-
-3. **newHashSet / newLinkedHashSet**：
-
-   ```java
-   Set<String> a = Sets.newHashSet(16);
-   Set<String> b = Sets.newLinkedHashSet(16);
-   ```
-
-   `SetBuilder` 内部对 `CapacityUtils.capacity` 做了转换，两个快捷方法同样如此。
-
-### Deques
-
-`Deques` 提供 `Deque` 的构建，以及一个自己的 `UnmodifiableDeque` 实现。
-
-1. **of**：
-
-   ```java
-   Deque<String> deque = Deques.of("a", "b", "c");
-   ```
-
-   返回 `UnmodifiableDeque`，底层是 `ArrayDeque`。空参数时返回共享的 `EMPTY` 单例。
-
-2. **dequeOf**：
-
-   与 `Maps.mapOf` 同构，接受 `Class<? extends Deque>` 或 `IntFunction<Deque>`，返回可复用的 `DequeBuilder`。
-
-   > 注：`IntFunction<Deque>` 的 `Int` 输入是**元素数量**，不是容量。因为 `ArrayDeque` 的 `int` 构造参数本身就是元素数量。这一点和 `Maps` / `Sets` 不同，见下文 CapacityUtils。
-
-3. **unmodifiableDeque**：
-
-   ```java
-   Deque<String> view = Deques.unmodifiableDeque(someDeque);
-   ```
-
-   把一个可变 `Deque` 包成只读视图。所有写操作抛 `UnsupportedOperationException`，`iterator().remove()` 和 `removeIf` 也会被拦截。
-
-   > 注意：`UnmodifiableDeque.equals` / `hashCode` 直接转发给底层 `Deque`。如果底层是 `ArrayDeque`，它沿用 `Object` 的引用相等语义，因此两个内容相同的 `UnmodifiableDeque` 并不相等。需要内容比较时请自行遍历。
-
-### MapModifier
-
-`MapModifier` 是一个链式的 `Map` 构造器，适合“逐步组装、可读性优先”的场景。
+#### 核心设计：延迟泛型推断
+所有的 `Builder` 都是无状态且不可变的。你可以实例化一个 `Builder` 模具，无限次地铸造出**完全不同泛型**的集合，完美解决泛型被过早固定死的问题。
 
 ```java
-Map<String, Object> map = new MapModifier<String, Object>()
-    .put("name", "alice")
-    .putIfNotNull("email", maybeEmail)
-    .putAll(otherMap)
-    .toImmutableMap();
+// 实例化一次，复用无数次，线程绝对安全
+Lists.ListBuilder lb = Lists.listOf(ArrayList::new);
+List<String> list1 = lb.of("A", "B");
+List<Integer> list2 = lb.of(1, 2, 3); 
+
+// 兼容传统面向对象写法（内部使用 ClassValue + getConstructor 缓存反射，性能极佳）
+Lists.ListBuilder lb2 = Lists.listOf(ArrayList.class);
 ```
 
-| 方法 | 说明 |
-| --- | --- |
-| `put(k, v)` | 无条件写入 |
-| `putIfNotNull(k, v)` | key 或 value 任一为 null 时跳过 |
-| `putAll(map)` | 批量写入，null 参数抛 `NullPointerException` |
-| `clear()` | 清空 |
-| `size()` | 当前大小 |
-| `toMap()` | 返回可变 `LinkedHashMap` 副本 |
-| `toImmutableMap()` | 返回不可修改副本 |
+#### 三大核心特性：
+1. **精确的容量预分配**：针对 `ArrayList` / `HashMap` / `HashSet` 等，内部自动调用 `CapacityUtils.capacity` 计算真实容量，**彻底消灭无意义的扩容操作**。
+2. **支持 Lambda 与 Class 双模式**：传 `Class` 极简易用，传 `IntFunction` 极致灵活（如 `ArrayList::new` 或 `i -> new TreeMap<>()`）。
+3. **填补 JDK 空白**：`Deques` 提供了 JDK 原生的 `Deque` 所缺失的 `Deque.of()` 和 `UnmodifiableDeque` 实现。
 
-默认内部使用 `LinkedHashMap`，也可以用 `new MapModifier<>(existingMap)` 包装一个已有的 map，此时 `toMap` 会返回其副本。
+> **注：容量说明**
+> `Maps` 和 `Sets` 的 `IntFunction` 入参是**容量**（内部会做 `CapacityUtils.capacity` 换算）。
+> `Lists` 和 `Deques` 的入参是**元素数量**（如 `ArrayList` 的 `int` 构造参数本身即预期元素数量）。
 
-配合 `Maps.modifierToAnyMap` 可以把构造结果直接交给任意 `Map` 工厂：
+---
+
+### JSON 解析 (json)
+
+**从 0.8.0 开始，废弃了所有 `org.json` 风格的 `JsonObject` / `JsonArray` / `JsonUtils` 树形模型。**
+抛弃了高维护成本、弱类型的四不像中间态，`parse` 包回归最纯粹、极速的解析器，只产出原生 `Map` 和 `List`。
+
+#### 极速解析
+```java
+// 解析为原生的 LinkedHashMap，保持字段顺序
+Map<String, Object> rawMap = new JsonParser(json).parseObject();
+
+// 解析为原生的 ArrayList
+List<Object> rawList = new JsonParser(json).parseArray();
+```
+
+---
+
+### Unsafe 底层增强 (unsafe)
+
+`unsafe` 包**自身不获取、也不持有** `sun.misc.Unsafe`（防止被当成提权攻击的“白手套”），而是依赖外部传入 `IUnsafe` 接口实现，做到彻底的能力隔离。
+
+#### 1. 极速序列化/反序列化 (`Unsafeties`)
+利用 `Unsafe` 直接读写内存偏移量，配合 `ClassValue` 字段缓存，吞吐量远超传统反射。
 
 ```java
-TreeMap<String, Integer> treeMap = Maps.modifierToAnyMap(
-    new MapModifier<String, Integer>().put("b", 2).put("a", 1),
-    TreeMap::new
-);
+Unsafeties u = Unsafeties.getInstance(myUnsafeImpl);
+
+// 将对象拆解为原始 Map
+BeanMap beanMap = u.beanToMap(myObject); 
+
+// 将原生 Map 极速反序列化为对象
+User user = u.deserialize(User.class, rawMap);
 ```
 
-### CapacityUtils
+#### 2. 严格区分普通 Map 与 Bean (`BeanMap` & `BeanMapWrapper`)
+为了不在类型转换上产生歧义（例如 JSON 对象到底该转成业务 Bean 还是普通字典），GXU 引入了强语义的 `BeanMap`。
+`BeanMapWrapper` 会依据目标类的字段泛型，深度递归扫描原生 `Map`，**精准地为需要转成 Bean 的子结构贴上 `BeanMap` 标签**。
 
-集合工厂内部用它做“元素数量 → 初始容量”的换算，直接暴露给调用方以支持自定义 `IntFunction`。
+```java
+// 1. 解析出纯 Map
+Map<String, Object> rawMap = new JsonParser(json).parseObject();
 
-1. **capacity(int expectedSize)**：
+// 2. 根据 User 结构贴标签（普通字典字段原样保留，Bean 字段包装为 BeanMap）
+Map<String, Object> taggedMap = BeanMapWrapper.wrap(User.class, rawMap);
 
-   把预期元素数量换算成 `HashMap` / `HashSet` 这类以负载因子 0.75 扩容的集合的初始容量。
+// 3. 极速反序列化
+User user = Unsafeties.getInstance(unsafe).deserialize(User.class, taggedMap);
+```
 
-   ```java
-   CapacityUtils.capacity(0);   // 1
-   CapacityUtils.capacity(3);   // 4
-   CapacityUtils.capacity(16);  // 21
-   ```
+---
 
-   负数抛 `IllegalArgumentException`。
+### 反射与调用者安全 (reflect)
 
-2. **inverseCapacity(int capacity)**：
+`Fields` 提供了纯反射读写。`Callers` 则提供了**防伪造、防反射篡改的栈帧扫描能力**。
 
-   `capacity` 的逆运算：从初始容量反推元素数量。用于把 `Maps.mapOf(IntFunction<Map>)` 的入参（容量）还原为业务侧更直观的元素数量。
+#### Callers 调用链安全防御
+传统的 `StackWalker` 经常被攻击者在自己的恶意方法上加个注解就伪造了调用链。GXU 的 `Callers` 引入了双重校验：
+1. **白名单机制 (`trusted`)**：只有被显式加入白名单的类，其带有 `@SkipCallerScan` 注解的方法才会被真正跳过。
+2. **纯不可变性**：内部 `trusted` 集合使用 `Set.copyOf` 深度冻结，攻击者就算反射拿到了也无法往里塞类。
+3. **模块系统隔离**：库自带 `module-info.class` 且**无 `opens` 声明**。外部若尝试 `setAccessible(true)` 篡改，JVM 将直接抛出异常拦截。
 
-   ```java
-   CapacityUtils.inverseCapacity(21);  // 16
-   CapacityUtils.inverseCapacity(4);   // 3
-   ```
+```java
+// 只有框架类 (MyFrameWorkClass) 内部的 @SkipCallerScan 才会生效
+Callers callers = new Callers(MyFrameWorkClass.class);
+boolean isSafe = callers.isCalledFrom(MyFrameWorkClass.class);
+```
 
-   如果传入的容量不是 `capacity` 的合法输出值，抛 `IllegalArgumentException`。
+---
 
-> 注意：`Maps` 和 `Sets` 的 `IntFunction` 入参已经是容量（内部会调 `CapacityUtils.capacity`），而 `Lists` 和 `Deques` 的入参是元素数量（不做转换）。需要跨类型统一时，用 `inverseCapacity` 显式还原。
+### 其他工具
+
+- **`MapModifier`**：优雅的链式 Map 组装器，支持 `putIfNotNull`，一键生成可变或不可变副本。
+- **`CapacityUtils`**：开放 `capacity` 与 `inverseCapacity`，帮助用户自定义集合时也能做到完美的容量预分配。
 
 ## 构建
 
@@ -213,3 +137,9 @@ mvn clean install
 ## 许可证
 
 [Apache License 2.0](LICENSE)
+```
+
+### 升级说明 (0.2.0 -> 0.8.0 核心破坏性变更)：
+1. **彻底删除** `JsonUtils`, `JsonObject`, `JsonArray` 以及对应的注解映射（迁移至 `JsonParser` 纯解析）。
+2. **彻底分离** 的职责：JSON 解析器只负责出 `Map/List`；`Unsafeties` 和 `BeanMapWrapper` 负责把 `Map` 组装成强类型的 Java Bean。
+3. 如果你在旧代码里使用了 `Var` 和 `CloseException`，请注意它们已在 0.8.0 被标记为废弃（由于并发竞态和异常机制存在设计缺陷，不推荐生产使用）。
