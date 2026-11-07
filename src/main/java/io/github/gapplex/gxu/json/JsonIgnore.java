@@ -34,6 +34,7 @@ import java.lang.annotation.Target;
  *
  * @author gapplex
  */
+@Deprecated(since = "0.8.0")
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
 public @interface JsonIgnore {

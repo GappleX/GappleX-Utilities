@@ -15,37 +15,50 @@
  */
 package io.github.gapplex.gxu.json;
 
-import io.github.gapplex.gxu.json.object.JsonArray;
-import io.github.gapplex.gxu.json.object.JsonObject;
+import io.github.gapplex.gxu.json.parse.JsonParser;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import java.util.List;
+import java.util.Map;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 class JsonParserTrailingTokenTest {
 
+    /**
+     * 辅助方法：由于 JsonUtils 已废弃，直接使用 JsonParser 来验证合法性。
+     */
+    private boolean isValid(String json) {
+        try {
+            new JsonParser(json).parse();
+            return true;
+        } catch (RuntimeException e) {
+            return false;
+        }
+    }
+
     @Test
     void parseAcceptsSingleValueAndTrailingWhitespace() {
-        assertEquals(Boolean.TRUE, JsonUtils.parse("true"));
-        assertEquals(Boolean.TRUE, JsonUtils.parse("true \n\t"));
-        assertEquals("ok", JsonUtils.parse("\"ok\""));
-        assertTrue(JsonUtils.parse("{}") instanceof JsonObject);
-        assertTrue(JsonUtils.parse("[]") instanceof JsonArray);
-        assertTrue(JsonUtils.isValid(" { \"a\": 1 } \n"));
+        assertEquals(Boolean.TRUE, new JsonParser("true").parse());
+        assertEquals(Boolean.TRUE, new JsonParser("true \n\t").parse());
+        assertEquals("ok", new JsonParser("\"ok\"").parse());
+
+        assertInstanceOf(Map.class, new JsonParser("{}").parse());
+        assertInstanceOf(List.class, new JsonParser("[]").parse());
+
+        assertTrue(isValid(" { \"a\": 1 } \n"));
     }
 
     @Test
     void parseRejectsTrailingTokens() {
-        assertFalse(JsonUtils.isValid("true extra"));
-        assertFalse(JsonUtils.isValid("1 2"));
-        assertFalse(JsonUtils.isValid("{}{}"));
-        assertFalse(JsonUtils.isValid("[1] [2]"));
-        assertFalse(JsonUtils.isValid("{\"a\":1} true"));
+        assertFalse(isValid("true extra"));
+        assertFalse(isValid("1 2"));
+        assertFalse(isValid("{}{}"));
+        assertFalse(isValid("[1] [2]"));
+        assertFalse(isValid("{\"a\":1} true"));
 
-        assertThrows(JsonException.class, () -> JsonUtils.parse("true extra"));
-        assertThrows(JsonException.class, () -> JsonObject.valueOf("{\"a\":1} 0"));
-        assertThrows(JsonException.class, () -> JsonArray.valueOf("[1] ,"));
+        assertThrows(JsonException.class, () -> new JsonParser("true extra").parse());
+        assertThrows(JsonException.class, () -> new JsonParser("{\"a\":1} 0").parseObject());
+        assertThrows(JsonException.class, () -> new JsonParser("[1] ,").parseArray());
     }
 }
