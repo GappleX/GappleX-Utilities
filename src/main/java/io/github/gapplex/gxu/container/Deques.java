@@ -1,3 +1,18 @@
+/*
+ * Copyright (C) 2026 GappleX
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     https://www.apache.org/licenses/LICENSE-2.0.txt
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package io.github.gapplex.gxu.container;
 
 import org.jetbrains.annotations.Contract;
@@ -197,17 +212,17 @@ public class Deques {
         }
 
         @Override
-        public boolean addAll(Collection<? extends E> c) {
+        public boolean addAll(@NotNull Collection<? extends E> c) {
             throw new UnsupportedOperationException();
         }
 
         @Override
-        public boolean removeAll(Collection<?> c) {
+        public boolean removeAll(@NotNull Collection<?> c) {
             throw new UnsupportedOperationException();
         }
 
         @Override
-        public boolean retainAll(Collection<?> c) {
+        public boolean retainAll(@NotNull Collection<?> c) {
             throw new UnsupportedOperationException();
         }
 
@@ -232,7 +247,7 @@ public class Deques {
         }
 
         @Override
-        public boolean containsAll(Collection<?> c) {
+        public boolean containsAll(@NotNull Collection<?> c) {
             return d.containsAll(c);
         }
 
@@ -264,7 +279,7 @@ public class Deques {
         }
 
         @Override
-        public <T> T @NotNull [] toArray(T[] a) {
+        public <T> T @NotNull [] toArray(T @NotNull [] a) {
             return d.toArray(a);
         }
 
@@ -275,7 +290,7 @@ public class Deques {
         }
 
         @Override
-        public boolean removeIf(Predicate<? super E> filter) {
+        public boolean removeIf(@NotNull Predicate<? super E> filter) {
             throw new UnsupportedOperationException();
         }
 

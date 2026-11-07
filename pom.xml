@@ -7,11 +7,15 @@
 
     <groupId>io.github.gapplex</groupId>
     <artifactId>gxu</artifactId>
-    <version>0.1.0</version>
+    <version>0.8.0</version>
     <packaging>jar</packaging>
 
     <name>GapplX-Utilities</name>
-    <description>Lightweight Java 8 collection utilities: builders for List, Set, Map and Deque with optional immutability.</description>
+    <description>
+        A lightweight Java 11 utility library: collection builders with optional immutability,
+        a dependency-free JSON parser/serializer, type conversion, reflection helpers,
+        and observable value containers.
+    </description>
     <url>https://github.com/GappleX/GappleX-Utilities</url>
 
     <licenses>
@@ -34,11 +38,11 @@
         <connection>scm:git:https://github.com/GappleX/GappleX-Utilities.git</connection>
         <developerConnection>scm:git:git@github.com:GappleX/GappleX-Utilities.git</developerConnection>
         <url>https://github.com/GappleX/GappleX-Utilities</url>
-        <tag>v0.1.0</tag>
+        <tag>v0.8.0</tag>
     </scm>
 
     <properties>
-        <maven.compiler.release>8</maven.compiler.release>
+        <maven.compiler.release>11</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <jetbrains.annotations.version>24.1.0</jetbrains.annotations.version>
@@ -51,6 +55,12 @@
             <version>${jetbrains.annotations.version}</version>
             <scope>provided</scope>
         </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>5.10.2</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
@@ -58,10 +68,23 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.11.0</version>
+                <version>3.13.0</version>
                 <configuration>
-                    <release>8</release>
                     <encoding>UTF-8</encoding>
+                    <release>11</release>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.4.1</version>
+                <configuration>
+                    <archive>
+                        <manifestEntries>
+                            <Automatic-Module-Name>io.github.gapplex.gxu</Automatic-Module-Name>
+                        </manifestEntries>
+                    </archive>
                 </configuration>
             </plugin>
 
@@ -82,7 +105,7 @@
                     </properties>
                     <licenseSets>
                         <licenseSet>
-                            <header>${maven.multiModuleProjectDirectory}/header.txt</header>
+                            <header>${project.basedir}/header.txt</header>
                             <excludes>
                                 <exclude>**/README*</exclude>
                                 <exclude>**/LICENSE*</exclude>
@@ -98,6 +121,15 @@
                         <java>SLASHSTAR_STYLE</java>
                     </mapping>
                 </configuration>
+                <executions>
+                    <execution>
+                        <id>format-license</id>
+                        <phase>process-sources</phase>
+                        <goals>
+                            <goal>format</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
 
             <plugin>
@@ -143,7 +175,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
-                <version>3.6.3</version>
+                <version>3.11.1</version>
                 <configuration>
                     <doclint>none</doclint>
                 </configuration>
